@@ -14,7 +14,7 @@
 | path to your installation.
 |
 */
-$config['base_url']	= 'http://localhost/sites/songsplit/ss_db_migration/';
+$config['base_url']	= 'http://www.com/ss_db_migration/';
 
 /*
 |--------------------------------------------------------------------------

@@ -53,8 +53,8 @@ $active_record = TRUE;
 
 
 $db['songsplits_live']['hostname'] = 'localhost';
-$db['songsplits_live']['username'] = 'root';
-$db['songsplits_live']['password'] = 'DbMMB53a7zFPGmjx';
+$db['songsplits_live']['username'] = 'xxx';
+$db['songsplits_live']['password'] = 'yyy';
 $db['songsplits_live']['database'] = 'songsplits_live';
 $db['songsplits_live']['dbdriver'] = 'mysql';
 $db['songsplits_live']['dbprefix'] = '';
@@ -72,8 +72,8 @@ $db['songsplits_live']['stricton'] = FALSE;
 
 
 $db['songsplits_api_new']['hostname'] = 'localhost';
-$db['songsplits_api_new']['username'] = 'root';
-$db['songsplits_api_new']['password'] = 'DbMMB53a7zFPGmjx';
+$db['songsplits_api_new']['username'] = 'xxx';
+$db['songsplits_api_new']['password'] = 'yyy';
 $db['songsplits_api_new']['database'] = 'songsplits_api_new';
 $db['songsplits_api_new']['dbdriver'] = 'mysql';
 $db['songsplits_api_new']['dbprefix'] = '';

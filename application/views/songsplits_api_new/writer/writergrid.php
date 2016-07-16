@@ -174,7 +174,11 @@
       <? } ?>
 </tbody>
 </table>
+
+
 <br />
+
+<?= $page_links; ?>
 
 
 

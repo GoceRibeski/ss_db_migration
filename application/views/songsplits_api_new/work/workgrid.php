@@ -1,8 +1,8 @@
-<?
+<?php
    $this->load->helper('url');
-   $modify_url = site_url('work/modify/');
-   $delete_url = site_url('work/delete/');
-   $add_url    = site_url('work/add/');
+   $modify_url = site_url('songsplits_api_new/work/modify/');
+   $delete_url = site_url('songsplits_api_new/work/delete/');
+   $add_url    = site_url('songsplits_api_new/work/add/');
 
 ?>
 <style>

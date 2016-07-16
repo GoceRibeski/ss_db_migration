@@ -131,6 +131,55 @@ var $iswc;
 
    }
 
+   function find_by_field_value($field, $value) {
+
+      $results = array();
+
+      // Load the database library
+      $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+      $this->db_songsplits_live->where( $field, $value);
+      $query = $this->db_songsplits_live->get( 'song' );
+      
+        
+
+      if ($query->num_rows() > 0) {
+         // return $query->result_array();
+         foreach ($query->result_array() as $row)      // Go through the result set
+         {
+            // Build up a list for each column from the database and place it in
+            // ...the result set
+
+			$query_results['song_id']		 = $row['song_id'];
+			$query_results['create_by_id']		 = $row['create_by_id'];
+			$query_results['status_id']		 = $row['status_id'];
+			$query_results['song_title']		 = $row['song_title'];
+			$query_results['alt_title1']		 = $row['alt_title1'];
+			$query_results['created']		 = $row['created'];
+			$query_results['modified']		 = $row['modified'];
+			$query_results['sampled']		 = $row['sampled'];
+			$query_results['is_cue']		 = $row['is_cue'];
+			$query_results['is_track']		 = $row['is_track'];
+			$query_results['is_lyrics']		 = $row['is_lyrics'];
+			$query_results['current_version']		 = $row['current_version'];
+			$query_results['lyrics']		 = $row['lyrics'];
+			$query_results['iswc']		 = $row['iswc'];
+
+			$results[]		 = $query_results;
+
+
+         }
+
+      }
+      
+      
+                
+
+
+      return $results;
+
+   }
+
 
    // TODO: this won't be possible if there is no primary key for the table.
    function retrieve_by_pkey($idField) {
@@ -141,6 +190,47 @@ var $iswc;
       $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
 
       $this->db_songsplits_live->where( 'song_id', "$idField");
+      $this->db_songsplits_live->limit( 1 );
+      $query = $this->db_songsplits_live->get( 'song' );
+
+
+      if ($query->num_rows() > 0) {
+         $row = $query->row_array();
+
+		$query_results['song_id']		 = $row['song_id'];
+		$query_results['create_by_id']		 = $row['create_by_id'];
+		$query_results['status_id']		 = $row['status_id'];
+		$query_results['song_title']		 = $row['song_title'];
+		$query_results['alt_title1']		 = $row['alt_title1'];
+		$query_results['created']		 = $row['created'];
+		$query_results['modified']		 = $row['modified'];
+		$query_results['sampled']		 = $row['sampled'];
+		$query_results['is_cue']		 = $row['is_cue'];
+		$query_results['is_track']		 = $row['is_track'];
+		$query_results['is_lyrics']		 = $row['is_lyrics'];
+		$query_results['current_version']		 = $row['current_version'];
+		$query_results['lyrics']		 = $row['lyrics'];
+		$query_results['iswc']		 = $row['iswc'];
+
+		$results		 = $query_results;
+
+
+      }
+      else {
+         $results = false;
+      }
+
+      return $results;
+   }
+
+    function retrieve_by_field_value($field, $value) {
+
+      $results = array();
+
+      // Load  the db library
+      $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+      $this->db_songsplits_live->where( $field, $value);
       $this->db_songsplits_live->limit( 1 );
       $query = $this->db_songsplits_live->get( 'song' );
 
@@ -344,6 +434,9 @@ var $iswc;
       
       
       function migrate_song_to_work() {
+          
+          // Load  the db library
+           $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
 
           $the_results['song_list'] = $this->songmodel->find();  // Send the retrievelist msg
           

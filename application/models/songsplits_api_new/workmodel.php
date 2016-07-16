@@ -153,9 +153,52 @@ var $sample_id;
 
    }
 
+   
+   function find_by_field_value($field, $value) {
+
+      $results = array();
+
+      // Load the database library
+      $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+
+      $this->db_songsplits_api_new->where( $field, "$value");
+      $query = $this->db_songsplits_api_new->get( 'work' );
+
+      if ($query->num_rows() > 0) {
+         // return $query->result_array();
+         foreach ($query->result_array() as $row)      // Go through the result set
+         {
+            // Build up a list for each column from the database and place it in
+            // ...the result set
+
+			$query_results['work_id']		 = $row['work_id'];
+			$query_results['create_user_id']		 = $row['create_user_id'];
+			$query_results['title']		 = $row['title'];
+			$query_results['alt_title']		 = $row['alt_title'];
+			$query_results['work_type']		 = $row['work_type'];
+			$query_results['status_id']		 = $row['status_id'];
+			$query_results['current_version']		 = $row['current_version'];
+			$query_results['date_created']		 = $row['date_created'];
+			$query_results['date_confirmed']		 = $row['date_confirmed'];
+			$query_results['iswc']		 = $row['iswc'];
+			$query_results['lyrics']		 = $row['lyrics'];
+			$query_results['sample_id']		 = $row['sample_id'];
+
+			$results[]		 = $query_results;
+
+
+         }
+
+      }
+
+      return $results;
+
+   }
+
 
    // TODO: this won't be possible if there is no primary key for the table.
    function retrieve_by_pkey($idField) {
+      
 
       $results = array();
 
@@ -346,90 +389,131 @@ var $sample_id;
 
       }
       
-       function migrate_song_to_work($the_results) {
-          
-          foreach ( $the_results['song_list'] as $song)
-          {
-              //
-            
-            
-            $work['work_id']            = $song['song_id'];
-            $work['create_user_id']     = $song['create_by_id'];
-            $work['status_id']          = $song['status_id'];
-            $work['title']              = $song['song_title'];
-            $work['alt_title']          = $song['alt_title1'];
-            $work['date_created']       = $song['created'];
-            $work['date_confirmed']     = $song['modified'];
-            $work['sample_id']          = $song['sampled'];
-            
-            if($song['is_cue'])
-            {
-                $work['work_type'] = 'cue';
-            }
-            elseif ($song['is_track']) 
-            {
-                $work['work_type'] = 'cue';
-            }
-            elseif ($song['is_lyrics']) 
-            {
-                $work['work_type'] = 'lyrics';
-            }
-            else
-            {
-                $work['work_type'] = '';
-            }
-            //$work['work_type'] = $song['is_cue'];$song['is_track'];$song['is_lyrics'];
-            
-            $work['current_version'] = $song['current_version'];
-            $work['lyrics'] = $song['lyrics'];
-            $work['iswc'] = $song['iswc'];
-            
-            
-            $this->add($work);
-            
-//            echo '<pre>';
-//            print_r($song);
-//            echo '<pre>';
-//            print_r($work);
-//            echo '<pre>';
-//            die(__FILE__.__LINE__);
-//            
-//Array
-//(
-//    [song_id] => 1
-//    [create_by_id] => 1
-//    [status_id] => 2
-//    [song_title] => No More Testing
-//    [alt_title1] => 
-//    [created] => 2012-06-02 16:24:40
-//    [modified] => 
-//    [sampled] => 0
-//    [is_cue] => 0
-//    [is_track] => 0
-//    [is_lyrics] => 0
-//    [current_version] => 1
-//    [lyrics] => 
-//    [iswc] => 
-//)
-            
-                    
-//      song_id         work_id	
-//	create_by_id	create_user_id	
-//	status_id	status_id	
-//	song_title	title	
-//	alt_title1	alt_title	
-//	created		date_created	
-//	modified	date_confirmed	
-//	sampled		sample_id	
-//	is_cue, is_track, is_lyrics		work_type	
-//	current_version	current_version	
-//	lyrics		lyrics	
-//	iswc		iswc	
-            
-            
-              
-              
-          }
+function migrate_song_to_work($the_results) {
+
+    $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+
+   foreach ( $the_results['song_list'] as $song)
+   {
+
+     $work['work_id']            = $song['song_id'];
+     
+     
+    /////////////////////////////////////////////////
+    //Use the new keys for writer:
+    // writer.writer_id fk 
+    // replace by new
+    // ida_writer_name (p_key)
+    //
+    //In live DB: song.create_by_id = writer.writer_id
+    //(This is as 'main' writer, otherwice Writer to Work is n:m)
+    //$work['create_user_id']     = $song['create_by_id'];
+    //
+    //Find the new key of the Writer by the old key $song['create_by_id']
+    $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+    //From the live.a_writer_keys, get ida_writer_name 
+    //where writer_id = $song['create_by_id']
+    $this->load->model('songsplits_live/writermodel');
+    $field = 'writer_id';
+    $value = $song['create_by_id'];
+    $a_writer_keys = $this->writermodel->retrieve_by_fkey_a_writer_keys($field, $value);
+    //set the new key: live.ida_writer_name is p_key for table writer now.
+    /////////////////////////////////////////////////
+    //////////////
+    //Some records of tbl.live.song do net reference to any writer record.
+    //Leave empry writer id for those songs, because their writrs can be saved in the Split   
+    //
+    //Example:
+    //live.song.song_id = 21152
+    //live.song.create_by_id = 82240
+    //There is no Writer(tblwriter - writer_id or u_id) with ID = 82240;
+    //leads to
+    //Error cant insert NULL: 
+    //INSERT INTO `work` 
+    //(`work_id`, `create_user_id`)
+    //('21152      NULL)  
+    if($a_writer_keys['ida_writer_name'])
+    {
+        $work['create_user_id']     = $a_writer_keys['ida_writer_name'];
+    }
+    else
+    {
+        $work['create_user_id']     = "";
+    }
+    /////////////////////////////////////////////////  
+        
+     
+//    echo '<pre>';
+//    print_r($song);
+//    echo '<pre>';
+//    echo '<pre>';
+//    print_r($a_writer_keys);
+//    echo '<pre>';
+//    die(__FILE__.__LINE__);
+    
+    /*
+     Array
+(
+    [song_id] => 1
+    [create_by_id] => 1
+    [status_id] => 2
+    [song_title] => No More Testing
+    [alt_title1] => 
+    [created] => 2012-06-02 16:24:40
+    [modified] => 
+    [sampled] => 0
+    [is_cue] => 0
+    [is_track] => 0
+    [is_lyrics] => 0
+    [current_version] => 1
+    [lyrics] => 
+    [iswc] => 
+)
+Array
+(
+    [ida_writer_keys] => 88559
+    [ida_writer_name] => 82334
+    [writer_id] => 1
+    [user_id] => 609029029
+)
+     */
+     
+     
+     
+     $work['status_id']          = $song['status_id'];
+     $work['title']              = $song['song_title'];
+     $work['alt_title']          = $song['alt_title1'];
+     $work['date_created']       = $song['created'];
+     $work['date_confirmed']     = $song['modified'];
+     $work['sample_id']          = $song['sampled'];
+
+     if($song['is_cue'])
+     {
+         $work['work_type'] = 'cue';
+     }
+     elseif ($song['is_track']) 
+     {
+         $work['work_type'] = 'cue';
+     }
+     elseif ($song['is_lyrics']) 
+     {
+         $work['work_type'] = 'lyrics';
+     }
+     else
+     {
+         $work['work_type'] = '';
+     }
+     //$work['work_type'] = $song['is_cue'];$song['is_track'];$song['is_lyrics'];
+
+     $work['current_version'] = $song['current_version'];
+     $work['lyrics'] = $song['lyrics'];
+     $work['iswc'] = $song['iswc'];
+
+     $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+     $this->add($work);
+
+
+   }
            
 
             echo '<pre>';
@@ -439,9 +523,8 @@ var $sample_id;
           
           
           
-      }
+}
+
 
 
 }
-
-?>

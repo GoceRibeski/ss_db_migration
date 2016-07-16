@@ -301,6 +301,57 @@ var $created_datatime;
 		$this->created_datatime = "";
 
       }
+      
+      
+      function live_harvest_to_api_signup() {
+          
+          
+          /*
+           live.harvest		api.signup	
+            id                  signup_id
+            first_name          full_name
+            last_name		
+            email               email
+            society             society
+            code                salt
+            status              status_id
+            created_datatime    date_created
+           */
+
+        $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+        $this->load->model('songsplits_live/harvestmodel', 'harvestmodel_live');                  // Instantiate the model
+        $the_results['harvest_list'] = $this->harvestmodel_live->findAll();  // Send the retrievelist msg
+
+  
+        
+        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+        foreach ($the_results['harvest_list'] as $read_live) 
+        {
+            $insert_api['signup_id'] = $read_live['id'];
+            
+            $insert_api['full_name'] = $read_live['first_name'].' '.$read_live['last_name'];
+            
+            $insert_api['email'] = $read_live['email'];
+            
+            $insert_api['society'] = $read_live['society'];
+            
+            $insert_api['salt'] = $read_live['code'];
+            
+            $insert_api['status_id'] = $read_live['status'];
+            
+            $insert_api['date_created'] = $read_live['created_datatime'];
+            
+           
+
+            //$this->add($insert_api);
+            $this->db_songsplits_api_new->insert('signup', $insert_api);
+
+            //return $this->db_songsplits_api_new->insert_id();
+        }
+        
+        
+    }
 
 }
 

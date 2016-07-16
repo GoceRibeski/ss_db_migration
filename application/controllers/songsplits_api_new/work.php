@@ -241,6 +241,11 @@ class Work extends CI_Controller {
          $this->load->model('songsplits_api_new/workmodel');
          $data = $this->workmodel->retrieve_by_pkey($idField);
          $data['action'] = 'modify';
+         
+         //Find all the publishers for this work:
+         //There user_id == publisher_id 
+         $this->load->model('songsplits_api_new/publisher_splitmodel');
+         $data['user_list'] = $this->publisher_splitmodel->retrieve_work_publishers($idField);
 
 
 

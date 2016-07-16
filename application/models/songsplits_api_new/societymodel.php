@@ -312,7 +312,36 @@ var $affiliation_code;
 		$this->affiliation_code = "";
 
       }
+      
+     
+      
+      function live_society_to_api_society($the_results) {
+
+//live.society		api.society	
+//	society_id		society_id
+//	society_name		short_name
+//	society_contact		contact_name
+
+
+        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+
+        foreach ($the_results['society_list'] as $read_live) 
+        {
+            //
+
+
+            $insert_api['society_id'] = $read_live['society_id'];
+            
+            $insert_api['short_name'] = $read_live['society_name'];
+            
+            $insert_api['contact_name'] = $read_live['society_contact'];
+
+
+
+
+            $this->add($insert_api);
+        }
+    }
+
 
 }
-
-?>

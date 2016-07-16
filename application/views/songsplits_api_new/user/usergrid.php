@@ -1,8 +1,8 @@
-<?
+<?php
    $this->load->helper('url');
-   $modify_url = site_url('user/modify/');
-   $delete_url = site_url('user/delete/');
-   $add_url    = site_url('user/add/');
+   $modify_url = site_url('songsplits_api_new/user/modify/');
+   $delete_url = site_url('songsplits_api_new/user/delete/');
+   $add_url    = site_url('songsplits_api_new/user/add/');
 
 ?>
 <style>
@@ -80,7 +80,18 @@
 <table class="tbl" border="0" cellpadding="2" cellspacing="1" width="100%">
 <thead>
 <tr>
-	<th align="right" width="70"> &nbsp; sort by:&nbsp; </th>
+	<th align="right" width="70"> </th>
+        
+        <th VALIGN='MIDDLE' ALIGN='CENTER'  class='tbl_headercell'>
+            Legal_name
+	</th>
+        
+        <th VALIGN='MIDDLE' ALIGN='CENTER'  class='tbl_headercell'>
+            Count Works
+	</th>
+        
+        
+        
 	<th VALIGN='MIDDLE' ALIGN='CENTER'  class='tbl_headercell'>
 		User_id
 	</th>
@@ -93,9 +104,7 @@
 	<th VALIGN='MIDDLE' ALIGN='CENTER'  class='tbl_headercell'>
 		Main_user_type
 	</th>
-	<th VALIGN='MIDDLE' ALIGN='CENTER'  class='tbl_headercell'>
-		Legal_name
-	</th>
+	
 	<th VALIGN='MIDDLE' ALIGN='CENTER'  class='tbl_headercell'>
 		Alias_1
 	</th>
@@ -140,7 +149,11 @@
 </thead>
 <tbody  class="scrollingContent">
 
-      <?
+      <?php
+      
+      
+      
+      
          $i = 0;
          foreach ($user_list as $user) {
             $i++;
@@ -148,15 +161,36 @@
       ?>
       <tr bgcolor="<?= $bgColor; ?>">
          <td align="center" nowrap="nowrap">
-            <a href = "<?= $modify_url."/".$user["user_id"]; ?>" >Edit</a>
+             
+             <?php
+             if($user['count_writer_split'])
+             {
+             ?>
+             <a href = "<?= $modify_url."/".$user["user_id"]; ?>" ><b>Works count: <?= $user['count_writer_split']; ?></b></a>
+             
+             <?php
+             }
+             ?>
+             
+            
+            
+            
+            
             &nbsp;&nbsp;&nbsp;
-            <a href = "<?= $delete_url."/".$user["user_id"]; ?>" >Delete</a>
+<!--            <a href = "< ?= $delete_url."/".$user["user_id"]; ?>" >Delete</a>-->
          </td>
+         
+    <td align="left" nowrap="nowrap"><?= $user['legal_name']; ?></td>
+     <td align="left" nowrap="nowrap"><?= $user['count_writer_split']; ?></td>
+    
+    
+
+         
+         
    <td align="left" nowrap="nowrap"><?= $user['user_id']; ?></td>
    <td align="left" nowrap="nowrap"><?= $user['group_id']; ?></td>
    <td align="left" nowrap="nowrap"><?= $user['usr_verified']; ?></td>
    <td align="left" nowrap="nowrap"><?= $user['main_user_type']; ?></td>
-   <td align="left" nowrap="nowrap"><?= $user['legal_name']; ?></td>
    <td align="left" nowrap="nowrap"><?= $user['alias_1']; ?></td>
    <td align="left" nowrap="nowrap"><?= $user['alias_2']; ?></td>
    <td align="left" nowrap="nowrap"><?= $user['email_1']; ?></td>
@@ -175,6 +209,9 @@
 </tbody>
 </table>
 <br />
+
+
+<?= $page_links; ?>
 
 
 

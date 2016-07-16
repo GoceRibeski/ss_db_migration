@@ -290,7 +290,36 @@ var $actual_publishers;
 		$this->actual_publishers = "";
 
       }
+      
+      
+      
+            
+      function live_society_to_api_society() {
+
+        $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+        $this->load->model('songsplits_live/societymodel', 'societymodel_live');                  // Instantiate the model
+        $the_results['society_list'] = $this->societymodel_live->findAll();  // Send the retrievelist msg
+
+        //$this->load->model('songsplits_api_new/societymodel', 'societymodel_api');
+        //$this->societymodel_api->live_society_to_api_society($the_results);
+        
+        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+        foreach ($the_results['society_list'] as $read_live) 
+        {
+            $insert_api['society_id'] = $read_live['society_id'];
+            
+            $insert_api['short_name'] = $read_live['society_name'];
+            
+            $insert_api['contact_name'] = $read_live['society_contact'];
+
+            //$this->add($insert_api);
+            $this->db_songsplits_api_new->insert('society', $insert_api);
+
+            //return $this->db_songsplits_api_new->insert_id();
+        }
+        
+        
+    }
 
 }
-
-?>

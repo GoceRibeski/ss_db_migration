@@ -325,9 +325,7 @@ var $role_id;
           
           $count = 300;//take on one bite
           
-          echo '<pre>';
-          print_r($count_all);
-          die(__FILE__.__LINE__);
+          
 
           for ($start = 0; $start < $count_all; $start = $start + $count) {
 

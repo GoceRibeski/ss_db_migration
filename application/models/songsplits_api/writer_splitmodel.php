@@ -71,7 +71,7 @@ var $work_id;
       $results = array();
 
       // Load the database library
-      $this->load->database();
+      $this->db_songsplits_api = $this->load->database('songsplits_api', TRUE);
 
       // ///////////////////////////////////////////////////////////////////////
       // Make a note of the current table record count
@@ -149,6 +149,47 @@ var $work_id;
 
    }
 
+   
+   function find_by_field_value($field, $value) {
+
+      $results = array();
+
+      // Load the database library
+      $this->db_songsplits_api = $this->load->database('songsplits_api', TRUE);
+
+
+      $this->db_songsplits_api->where( $field, "$value");
+      $query = $this->db_songsplits_api->get( 'writer_split' );
+
+      if ($query->num_rows() > 0) {
+         // return $query->result_array();
+         foreach ($query->result_array() as $row)      // Go through the result set
+         {
+            // Build up a list for each column from the database and place it in
+            // ...the result set
+
+			$query_results['confirmed']		 = $row['confirmed'];
+			$query_results['created']		 = $row['created'];
+			$query_results['writer_id']		 = $row['writer_id'];
+			$query_results['role']		 = $row['role'];
+			$query_results['split']		 = $row['split'];
+			$query_results['split_id']		 = $row['split_id'];
+			$query_results['split_type']		 = $row['split_type'];
+			$query_results['status_id']		 = $row['status_id'];
+			$query_results['version']		 = $row['version'];
+			$query_results['work_id']		 = $row['work_id'];
+
+			$results[]		 = $query_results;
+
+
+         }
+
+      }
+
+      return $results;
+
+   }
+
 
    // TODO: this won't be possible if there is no primary key for the table.
    function retrieve_by_pkey($idField) {
@@ -156,7 +197,7 @@ var $work_id;
       $results = array();
 
       // Load  the db library
-      $this->load->database();
+      $this->db_songsplits_api = $this->load->database('songsplits_api', TRUE);
 
       $this->db_songsplits_api->where( 'split_id', "$idField");
       $this->db_songsplits_api->limit( 1 );
@@ -192,7 +233,7 @@ var $work_id;
    function add( $data ) {
 
       // Load the database library
-      $this->load->database();
+      $this->db_songsplits_api = $this->load->database('songsplits_api', TRUE);
 
       $this->db_songsplits_api->insert('writer_split', $data);
 
@@ -202,7 +243,7 @@ var $work_id;
    function modify($keyvalue, $data) {
 
       // Load the database library
-      $this->load->database();
+      $this->db_songsplits_api = $this->load->database('songsplits_api', TRUE);
 
       $this->db_songsplits_api->where('split_id', $keyvalue);
       $this->db_songsplits_api->update('writer_split', $data);
@@ -211,7 +252,7 @@ var $work_id;
 
    function delete_by_pkey($idField) {
       // Load  the db library
-      $this->load->database();
+      $this->db_songsplits_api = $this->load->database('songsplits_api', TRUE);
 
       // ///////////////////////////////////////////////////////////////////////
       // TODO: Just to eliminate nasty mishaps, the delete query has been

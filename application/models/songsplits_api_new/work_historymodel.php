@@ -88,7 +88,6 @@ class Work_historyModel extends CI_Model {
             foreach ($query->result_array() as $row) {      // Go through the result set
                 // Build up a list for each column from the database and place it in
                 // ...the result set
-
                 $query_results['work_history_id'] = $row['work_history_id'];
                 $query_results['work_id'] = $row['work_id'];
                 $query_results['user_id'] = $row['user_id'];
@@ -252,7 +251,7 @@ class Work_historyModel extends CI_Model {
     }
 
     function migrate_versions_to_work_history($the_results) {
-        
+
 //        live.versions		api.work_history
 //        	
 //	version_id		work_history_id
@@ -270,35 +269,85 @@ class Work_historyModel extends CI_Model {
             //
 
 
-           $insert_api['work_history_id']       = $read_live['version_id'];
-           
-           $insert_api['work_id']               = $read_live['song_id'];
-           
-           $insert_api['user_id']               = $read_live['writer_id'];
-           
-           $insert_api['version']               = $read_live['version'];
-           
-           $insert_api['note']                  = $read_live['additional_info'];
-           
-           //$insert_api['split_id']            = $read_live['old_song_title'];
-           
-           $insert_api['date_created']          = $read_live['date_added'];
-           
-           
-//           echo '<pre>';
-//        print_r($insert_api);
-//        echo '<pre>';
-//        die(__FILE__ . __LINE__);
-           
+            $insert_api['work_history_id'] = $read_live['version_id'];
+
+
+
+
+
+
+
+
+            /////////////////////////////////////////////////
+            //check if this song_id already exists in api.work.work_id
+            $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+            //From the api.work, check if work_id exists:
+            $this->load->model('songsplits_api_new/workmodel', 'workmodelmodel_api');
+            $p_key_value = $read_live['song_id'];
+            $api_work = $this->workmodelmodel_api->retrieve_by_pkey($p_key_value);
+
+            if (!$api_work['work_id']) {
+                continue; //skip the record.
+            } else {
+                //$insert_api['work_id']      = $api_work['work_id'];
+                //same as
+                $insert_api['work_id'] = $read_live['song_id'];
+            }
+            /////////////////////////////////////////////////
+            /////////////////////////////////////////////////
+            //Use the new keys for writer:
+            // live.split.writer_id (f_key) 
+            // replace by new
+            // live.a_writer_name.ida_writer_name (p_key)
+            //
+    // 
+            //
+    //Find the new key of the Writer by the old key $song['create_by_id']
+            $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+            //From the live.a_writer_keys, get ida_writer_name 
+            //where writer_id = $split['writer_id']
+            $this->load->model('songsplits_live/writermodel');
+            $field = 'writer_id';
+            $value = $read_live['writer_id'];
+            $a_writer_keys = $this->writermodel->retrieve_by_fkey_a_writer_keys($field, $value);
+            //set the new key: live.ida_writer_name is p_key for table writer now.
+            ////////////////////////////////////////////
+            //Some records of tbl.live.split do net reference to any writer record.
+            //What to do with this records, skip?
+            //Example:
+            //live.split.split_id = 19
+            //live.split.work_id = 9
+            // insert writer_id = NULL
+            //Error cant insert NULL.
+            if ($a_writer_keys['ida_writer_name']) {
+                // $insert_api['user_id']               = $read_live['writer_id'];
+                $insert_api['user_id'] = $a_writer_keys['ida_writer_name'];
+            } else {
+                continue; //skip the record.
+            }
+            /////////////////////////////////////////////////
+
+
+            $insert_api['version'] = $read_live['version'];
+
+            $insert_api['note'] = $read_live['additional_info'];
+
+            //$insert_api['split_id']            = $read_live['old_song_title'];
+
+            $insert_api['date_created'] = $read_live['date_added'];
+
+
+//            echo '<pre>';
+//            print_r($read_live);
+//            echo '<pre>';
+//            echo '<pre>';
+//            print_r($insert_api);
+//            echo '<pre>';
+//            die(__FILE__ . __LINE__);
+
 
             $this->add($insert_api);
-
-
-
         }
-
-
-        
     }
 
 }

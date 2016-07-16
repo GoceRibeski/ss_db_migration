@@ -79,39 +79,6 @@ var $work_id;
       $this->table_record_count = $this->db_songsplits_api_new->count_all( 'publisher_split' );
 
 
-      // Filter could be an array or filter values or an SQL string.
-      $where_clause = '';
-      if ($filters) {
-         if ( is_string($filters) ) {
-            $where_clause = $filters;
-         }
-         elseif ( is_array($filters) ) {
-            // Build your filter rules
-            // ///////////////////////////////////////////////////////////////////////
-            // NOTE: There are many ways to build the select code. (For example, you
-            // NOTE: ...just pass the $filters array to where() like:
-            // NOTE: ...   $this->db_songsplits_api_new->where($filters);
-            // NOTE: ...instead of the foreach loop below. However, it's added to
-            // NOTE: ...allow further customisation.
-            // ///////////////////////////////////////////////////////////////////////
-            if ( count($filters) > 0 ) {
-               foreach ($filters as $field => $value) {
-                  $this->db_songsplits_api_new->where($field, $value);
-               }
-            }
-         }
-
-      }
-
-      if ($start) {
-         if ($count) {
-            $this->db_songsplits_api_new->limit($start, $count);
-         }
-         else {
-            $this->db_songsplits_api_new->limit($start);
-         }
-      }
-
 
       // ///////////////////////////////////////////////////////////////////////
       // NOTE: If you want the results ordered by a specific field, do it here.
@@ -148,7 +115,100 @@ var $work_id;
       return $results;
 
    }
+   
+   function count_work_publishers($work_id) {
+       
+       
+        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
 
+        $this->db_songsplits_api_new->where( 'work_id', "$work_id");
+        
+        $this->db_songsplits_api_new->from('publisher_split');
+        $count_work_publishers =  $this->db_songsplits_api_new->count_all_results();
+        
+        return $count_work_publishers;
+       
+   }
+
+   
+   function retrieve_work_publishers($work_id) {
+       
+       
+       $results = array();
+
+      // Load the database library
+      $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+
+   
+      //Find all the publishers for this work:
+      //There user_id == publisher_id 
+      //$this->db_songsplits_api_new->order_by('work.title');
+        
+        $this->db_songsplits_api_new->where('publisher_split.work_id', "$work_id");
+        
+        $this->db_songsplits_api_new->select('*');
+        $this->db_songsplits_api_new->from('publisher_split');
+        $this->db_songsplits_api_new->join('user', 'publisher_split.publisher_id = user.user_id', 'left');
+        
+        //$this->db_songsplits_api_new->group_by("work.title"); 
+
+        $query = $this->db_songsplits_api_new->get();
+      
+      
+
+      //$query = $this->db_songsplits_api_new->get( 'publisher_split' );
+
+      if ($query->num_rows() > 0) {
+         // return $query->result_array();
+         foreach ($query->result_array() as $row)      // Go through the result set
+         {
+            // Build up a list for each column from the database and place it in
+            // ...the result set
+
+			$query_results['confirmed']		 = $row['confirmed'];
+			$query_results['created']		 = $row['created'];
+			$query_results['publisher_id']		 = $row['publisher_id'];
+			$query_results['role']		 = $row['role'];
+			$query_results['split']		 = $row['split'];
+			$query_results['split_id']		 = $row['split_id'];
+			$query_results['split_type']		 = $row['split_type'];
+			$query_results['status_id']		 = $row['status_id'];
+			$query_results['version']		 = $row['version'];
+			$query_results['work_id']		 = $row['work_id'];
+                        
+                        
+                        
+                        $query_results['user_id'] = $row['user_id'];
+                        $query_results['group_id'] = $row['group_id'];
+                        $query_results['usr_verified'] = $row['usr_verified'];
+                        $query_results['main_user_type'] = $row['main_user_type'];
+                        $query_results['legal_name'] = $row['legal_name'];
+                        $query_results['alias_1'] = $row['alias_1'];
+                        $query_results['alias_2'] = $row['alias_2'];
+                        $query_results['email_1'] = $row['email_1'];
+                        $query_results['email_2'] = $row['email_2'];
+                        $query_results['phone'] = $row['phone'];
+                        $query_results['img_id'] = $row['img_id'];
+                        $query_results['date_joined'] = $row['date_joined'];
+                        $query_results['last_login'] = $row['last_login'];
+                        $query_results['location_id'] = $row['location_id'];
+                        $query_results['password'] = $row['password'];
+                        $query_results['language_id'] = $row['language_id'];
+                        $query_results['usr_pwdresettoken'] = $row['usr_pwdresettoken'];
+                        $query_results['usr_verify_email_token'] = $row['usr_verify_email_token'];
+                        
+                        
+
+			$results[]		 = $query_results;
+
+
+         }
+
+      }
+
+      return $results;
+       
+   }
 
    // TODO: this won't be possible if there is no primary key for the table.
    function retrieve_by_pkey($idField) {

@@ -235,6 +235,54 @@ var $img_name;
 		$this->img_name = "";
 
       }
+      
+      
+      
+      function live_img_to_api_image() {
+          
+          
+          /*
+           live.img		live.image	
+	img_id		img_id
+	img_name		img_link
+           */
+
+        $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+        $this->load->model('songsplits_live/imgmodel', 'imgmodel_live');                  // Instantiate the model
+        $the_results['img_list'] = $this->imgmodel_live->findAll();  // Send the retrievelist msg
+
+  
+        
+        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+        foreach ($the_results['img_list'] as $read_live) 
+        {
+            $insert_api['img_id'] = $read_live['img_id'];
+            
+          
+            $insert_api['img_link'] = $read_live['img_name'];
+            
+           
+
+            //$this->add($insert_api);
+            $this->db_songsplits_api_new->insert('image', $insert_api);
+
+            //return $this->db_songsplits_api_new->insert_id();
+        }
+        
+        
+    }
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
 
 }
 

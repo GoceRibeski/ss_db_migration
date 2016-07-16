@@ -73,11 +73,27 @@ class User extends CI_Controller {
       // NOTE: ...function call.
       // ///////////////////////////////////////////////////////////////////////
       $start = $this->uri->segment(4,0);
-      $limit_per_page = 10;
+      $limit_per_page = 300;
 
       $this->load->model('songsplits_api_new/usermodel');                  // Instantiate the model
       $the_results['user_list'] = $this->usermodel->findAll($start, $limit_per_page);  // Send the retrievelist msg
       // $the_results['rowcount'] = count($the_results['user_list']);
+      
+      //count splits for the user
+      $this->load->model('songsplits_api_new/writer_splitmodel');
+      foreach ($the_results['user_list'] as $key=>$user) {
+          
+//                        echo '<pre>';
+//            print_r($user);
+//            echo '<pre>';
+//            die(__FILE__.__LINE__);
+          
+        $the_results['user_list'][$key]['count_writer_split'] = $this->writer_splitmodel->count_writer_split($user['user_id']);
+      }
+      
+      usort($the_results['user_list'], array($this,'cmp'));
+       
+      
 
       // ///////////////////////////////////////////////////////////////////////
       // NOTE: Set up the paging links. Just remove this if you don't need it,
@@ -86,9 +102,10 @@ class User extends CI_Controller {
       $this->load->library('pagination');
       $this->load->helper('url');
 
-      $config['base_url']     = site_url('user/showall/');   // or just /user/
+      $config['base_url']     = site_url('songsplits_api_new/user/browse/');   // or just /user/
       $config['total_rows']   = $this->usermodel->table_record_count;
       $config['per_page']     = $limit_per_page;
+      $config['num_links'] = 60;
 
       $this->pagination->initialize($config);
 
@@ -106,6 +123,12 @@ class User extends CI_Controller {
       // $this->load->view('/songsplits_api_new/user/usergrid', $the_results);
 
    }
+   
+   
+   function cmp($a, $b)
+    {
+        return $b['count_writer_split'] - $a['count_writer_split'];
+    }
 
    // //////////////////////////////////////////////////////////////////////////
    // Function: add()
@@ -259,7 +282,28 @@ class User extends CI_Controller {
          $this->load->model('songsplits_api_new/usermodel');
          $data = $this->usermodel->retrieve_by_pkey($idField);
          $data['action'] = 'modify';
-
+         
+         
+         
+         
+         
+         $this->load->model('songsplits_api_new/writer_splitmodel');
+         // here $idField = user_id = $writer_id
+         $data['work_list'] = $this->writer_splitmodel->retrieve_by_writer_join_work($idField);
+         
+        
+         //count work publishers
+         $this->load->model('songsplits_api_new/publisher_splitmodel');
+         foreach($data['work_list'] as $key=>$work)
+         {
+             $count_work_publishers =  $this->publisher_splitmodel->count_work_publishers($work['work_id']);
+             $data['work_list'][$key]['count_work_publishers'] =  $count_work_publishers;
+         }
+         
+//            echo '<pre>';
+//            print_r($data['work']);
+//            echo '<pre>';
+//            die(__FILE__.__LINE__);
 
 
          $this->load->library('songsplits_api_new/layout');

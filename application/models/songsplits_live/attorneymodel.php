@@ -312,6 +312,39 @@ var $fax;
 		$this->fax = "";
 
       }
+      
+      
+      function live_attorney_to_api_attorney() {
+          
+        $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+        $this->load->model('songsplits_live/attorneymodel', 'attorney_live');
+
+
+        $the_results['attorney_list'] = $this->attorney_live->find();  // Send the retrievelist msg
+
+        NEXT: Insert attorney as user,create new table/key api_attorney_insert_id.
+                
+        do join attorney with writer. For each writer find thr new api p_key: ida_writer_name.
+                
+        For all joined writers, insert intp api.attorney:
+            api_attorney_insert_id as arrorney_id
+            ida_writer_name        as user_id
+            and the Name
+            
+            
+            
+        ;
+                
+        echo '<pre>';
+        print_r($the_results);
+        echo '<pre>';
+        die(__FILE__ . __LINE__);
+
+          
+      }
+      
+      
 
 }
 

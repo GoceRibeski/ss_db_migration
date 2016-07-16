@@ -73,7 +73,6 @@ class UserModel extends CI_Model {
 
     function find($filters = NULL, $start = NULL, $count = NULL) {
         
-        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
 
         $results = array();
 
@@ -86,15 +85,32 @@ class UserModel extends CI_Model {
         $this->table_record_count = $this->db_songsplits_api_new->count_all('user');
 
 
-       
+        $this->db_songsplits_api_new->limit($count, $start);
 
 
         // ///////////////////////////////////////////////////////////////////////
         // NOTE: If you want the results ordered by a specific field, do it here.
         // ///////////////////////////////////////////////////////////////////////
-        // $this->db_songsplits_api_new->orderby();
+        //$this->db_songsplits_api_new->order_by('legal_name');
+        
+        //$this->db_songsplits_api_new->order_by('work.title');
+       
+        
+        $this->db_songsplits_api_new->select('*');
+        $this->db_songsplits_api_new->from('user');
+        $this->db_songsplits_api_new->join('writer_split', 'user.user_id = writer_split.writer_id', 'inner');
+        
+        //$this->db_songsplits_api_new->group_by("work.title"); 
 
-        $query = $this->db_songsplits_api_new->get('user');
+        $query = $this->db_songsplits_api_new->get();
+        ///////////////////////////////////////////////////////////////////////
+        
+        
+        
+        
+        
+
+        //$query = $this->db_songsplits_api_new->get('user');
 
         if ($query->num_rows() > 0) {
             // return $query->result_array();
@@ -172,10 +188,53 @@ class UserModel extends CI_Model {
 
         return $results;
     }
+    
+    //retrieve only 1
+    function retrieve_publisher_by_name($legal_name) {
+        
+        $results = array();
+
+        // Load  the db library
+        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
+
+        $this->db_songsplits_api_new->where('legal_name', "$legal_name");
+        $this->db_songsplits_api_new->where('main_user_type', "publisher");
+        $this->db_songsplits_api_new->limit(1);
+        $query = $this->db_songsplits_api_new->get('user');
+
+
+        if ($query->num_rows() > 0) {
+            $row = $query->row_array();
+
+            $query_results['user_id'] = $row['user_id'];
+            $query_results['group_id'] = $row['group_id'];
+            $query_results['usr_verified'] = $row['usr_verified'];
+            $query_results['main_user_type'] = $row['main_user_type'];
+            $query_results['legal_name'] = $row['legal_name'];
+            $query_results['alias_1'] = $row['alias_1'];
+            $query_results['alias_2'] = $row['alias_2'];
+            $query_results['email_1'] = $row['email_1'];
+            $query_results['email_2'] = $row['email_2'];
+            $query_results['phone'] = $row['phone'];
+            $query_results['img_id'] = $row['img_id'];
+            $query_results['date_joined'] = $row['date_joined'];
+            $query_results['last_login'] = $row['last_login'];
+            $query_results['location_id'] = $row['location_id'];
+            $query_results['password'] = $row['password'];
+            $query_results['language_id'] = $row['language_id'];
+            $query_results['usr_pwdresettoken'] = $row['usr_pwdresettoken'];
+            $query_results['usr_verify_email_token'] = $row['usr_verify_email_token'];
+
+            $results = $query_results;
+        } else {
+            $results = false;
+        }
+
+        return $results;
+    }
 
     function add($data) {
         
-        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
 
         // Load the database library
         $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
@@ -187,7 +246,6 @@ class UserModel extends CI_Model {
 
     function modify($keyvalue, $data) {
         
-        $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);
 
         // Load the database library
         $this->db_songsplits_api_new = $this->load->database('songsplits_api_new', TRUE);

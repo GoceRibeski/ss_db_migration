@@ -73,10 +73,10 @@ class Writer extends CI_Controller {
       // NOTE: ...function call.
       // ///////////////////////////////////////////////////////////////////////
       $start = $this->uri->segment(4,0);
-      $limit_per_page = 10;
+      $limit_per_page = 100;
 
-      $this->load->model('songsplits_api_new/writermodel');                  // Instantiate the model
-      $the_results['writer_list'] = $this->writermodel->findAll($start, $limit_per_page);  // Send the retrievelist msg
+      $this->load->model('songsplits_api_new/writermodel_api');                  // Instantiate the model
+      $the_results['writer_list'] = $this->writermodel_api->findAll($start, $limit_per_page);  // Send the retrievelist msg
       // $the_results['rowcount'] = count($the_results['writer_list']);
 
       // ///////////////////////////////////////////////////////////////////////
@@ -86,8 +86,8 @@ class Writer extends CI_Controller {
       $this->load->library('pagination');
       $this->load->helper('url');
 
-      $config['base_url']     = site_url('writer/showall/');   // or just /writer/
-      $config['total_rows']   = $this->writermodel->table_record_count;
+      $config['base_url']     = site_url('songsplits_api_new/writer/browse/');   // or just /writer/
+      $config['total_rows']   = $this->writermodel_api->table_record_count;
       $config['per_page']     = $limit_per_page;
 
       $this->pagination->initialize($config);

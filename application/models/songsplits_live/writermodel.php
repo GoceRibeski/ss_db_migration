@@ -112,20 +112,13 @@ var $temp;
 
    function find($filters = NULL, $start = NULL, $count = NULL) {
 
-        $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+      $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
        
       $results = array();
 
       // Load the database library
       $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
 
-      // ///////////////////////////////////////////////////////////////////////
-      // Make a note of the current table record count
-      // ///////////////////////////////////////////////////////////////////////
-      //$this->table_record_count = $this->db_songsplits_live->count_all( 'writer' );
-
-
-      
 
       // ///////////////////////////////////////////////////////////////////////
       // NOTE: If you want the results ordered by a specific field, do it here.
@@ -134,11 +127,7 @@ var $temp;
       //$this->db_songsplits_live->limit($limit, $offset);
       $this->db_songsplits_live->limit($count, $start);
       
-      echo '<pre>';
-          print_r($start);
-            echo '<pre>';
-            print_r($count);
-            echo '<------------>';
+      
 
 
       $query = $this->db_songsplits_live->get( 'writer' );
@@ -195,6 +184,101 @@ var $temp;
 			$query_results['publisher_admin_id']		 = $row['publisher_admin_id'];
 			$query_results['admin_id']		 = $row['admin_id'];
 			$query_results['temp']		 = $row['temp'];
+
+			$results[]		 = $query_results;
+
+
+         }
+
+      }
+      
+//            echo '<pre>';
+//            print_r($results);
+//            echo '<pre>';
+//            die(__FILE__.__LINE__);
+
+      return $results;
+
+   }
+   
+   //find for tbl.a_writer_name
+   // 	1	ida_writer_name
+   //   2	full_name
+   function find_a_writer_name($filters = NULL, $start = NULL, $count = NULL) {
+
+      $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+       
+      $results = array();
+
+
+      // ///////////////////////////////////////////////////////////////////////
+      // NOTE: If you want the results ordered by a specific field, do it here.
+      // ///////////////////////////////////////////////////////////////////////
+      //$this->db_songsplits_live->limit( 10 );
+      //$this->db_songsplits_live->limit($limit, $offset);
+      $this->db_songsplits_live->limit($count, $start);
+      
+      
+
+
+      $query = $this->db_songsplits_live->get( 'a_writer_name' );
+
+      if ($query->num_rows() > 0) {
+         // return $query->result_array();
+         foreach ($query->result_array() as $row)      // Go through the result set
+         {
+            // Build up a list for each column from the database and place it in
+            // ...the result set
+
+			$query_results['ida_writer_name']		 = $row['ida_writer_name'];
+			$query_results['full_name']		 = $row['full_name'];
+			
+			
+
+			$results[]		 = $query_results;
+
+
+         }
+
+      }
+      
+//            echo '<pre>';
+//            print_r($results);
+//            echo '<pre>';
+//            die(__FILE__.__LINE__);
+
+      return $results;
+
+   }
+   
+   function find_where($field, $value) {
+
+      $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+       
+      $results = array();
+
+      // Load the database library
+      $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+
+      
+      $this->db_songsplits_live->where($field, $value);
+
+      $query = $this->db_songsplits_live->get( 'writer' );
+
+      if ($query->num_rows() > 0) {
+         // return $query->result_array();
+         foreach ($query->result_array() as $row)      // Go through the result set
+         {
+            // Build up a list for each column from the database and place it in
+            // ...the result set
+
+			$query_results['writer_id']		 = $row['writer_id'];
+			$query_results['u_id']		 = $row['u_id'];
+			$query_results['full_name']		 = $row['full_name'];
+                        
+                        
+			
 
 			$results[]		 = $query_results;
 
@@ -275,6 +359,41 @@ var $temp;
 		$query_results['admin_id']		 = $row['admin_id'];
 		$query_results['temp']		 = $row['temp'];
 
+		$results		 = $query_results;
+
+
+      }
+      else {
+         $results = false;
+      }
+
+      return $results;
+   }
+   
+   
+   //retrieve from a_writer_keys, one record by field value
+   function retrieve_by_fkey_a_writer_keys($field, $value) {
+
+      $results = array();
+
+      // Load  the db library
+      $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+
+      $this->db_songsplits_live->where( $field, "$value");
+      $this->db_songsplits_live->limit( 1 );
+      $query = $this->db_songsplits_live->get( 'a_writer_keys' );
+
+
+      if ($query->num_rows() > 0) {
+         $row = $query->row_array();
+         
+
+		$query_results['ida_writer_keys']   = $row['ida_writer_keys'];
+		$query_results['ida_writer_name']   = $row['ida_writer_name'];
+		$query_results['writer_id']         = $row['writer_id'];
+		$query_results['user_id']           = $row['user_id'];
+                
+         
 		$results		 = $query_results;
 
 
@@ -703,52 +822,195 @@ var $temp;
       }
       
       
-      function migrate_writer_to_writer() {
+      // Create 2 new tablet from Writer: 
+      // a_writer_name & 
+      // a_writer_keys
+      // https://docs.google.com/document/d/1Pw4WZW7MV_SUag062K4v_cPdRy2rpjsQkcKmT9D30sk/edit
+      function fixing_live_writer() {
+          
+          //One writer name can appear multiple times in tbl.writer
+          //
+          //2. For each distinct name fill tables a_writer_name -(1:n)- a_writer_keys
+          //    - full name goes to a_writer_name with p_key ida_writer_name
+          //    - all keys(writer_id & user_id combinations) going to a_writer_keys
+          /////////
+          // In the new DB, ida_writer_name will be the main key to use. writer_id & user_id will only help to find and map related data.
+          
+          
+          
+          // Load  the db library
+          $this->db_songsplits_live = $this->load->database('songsplits_live', TRUE);
+ 
+          ///////////////////////////////////////////////////////////////
+          // 1. take all distinct writers by full_name
+          //tip, use ` not ' . else query wont work.
+          $sql = "SELECT DISTINCT(`full_name`) AS `full_name` FROM writer";// count = 597368
+          // SELECT DISTINCT full_name FROM writer             //  count = 597368
+          //  SELECT DISTINCT full_name, writer_id FROM writer  // count = 633642
+          
+          // Check number of apperiances of each distinct name
+          // http://stackoverflow.com/questions/688549/finding-duplicate-values-in-mysql
+          // SELECT full_name, COUNT(*) c FROM writer GROUP BY full_name HAVING c > 1;
+          
+          $query = $this->db_songsplits_live->query($sql); // should be 597368 597368
+          ///////////////////////////////////////////////////////////////
+          
+          
 
-          $count_all = $this->count_all();//633642
-          $count = 300;//take on oe bite
+            
+            //1. One writer name can appear multiple times in tbl.writer
+            foreach ($query->result_array() as $row) {      // Go through the result set
+                
+                
+                //////////////////////////
+                //get all the recorts from live.writer with that distinct name
+                $field = "full_name";
+                $value = $row['full_name'];
+                //test
+                //$value = "Ashley Nicole";
+            
+                $results_by_name = $this->find_where($field, $value);
+                ///////////////////////////
+                
+                
+                //insert distinct name  in a_writer_name
+                $data_a_writer_name['full_name'] = $row['full_name'];
+                //TEST
+                //$data_a_writer_name['full_name'] = "Ashley Nicole";
+                
+                $this->db_songsplits_live->insert('a_writer_name', $data_a_writer_name);
+                $insert_ida_writer_name = $this->db_songsplits_live->insert_id();
+                
+                
+                
+                
+                
+                
+                //2. For each distinct name fill tables a_writer_keys
+                $insert_ida_writer_keys = array();
+                foreach ($results_by_name as $result_name) { 
+                    
+                    
+                    $data_a_writer_keys['ida_writer_name'] = $insert_ida_writer_name;
+                    $data_a_writer_keys['writer_id'] = $result_name['writer_id'];
+                    $data_a_writer_keys['user_id']   = $result_name['u_id'];
+                    
+                    $this->db_songsplits_live->insert('a_writer_keys', $data_a_writer_keys);
+                    $insert_ida_writer_keys[] = $this->db_songsplits_live->insert_id();
+                }
+                
+                
+                
+                
+//                echo 'full_name:';
+//                print_r($row['full_name']);
+//                echo '<pre>';
+//                print_r($results_by_name);
+//                echo '<pre>';
+//                echo '<pre>';
+//                print_r($insert_ida_writer_keys);
+//                echo '<pre>';
+//                die(__FILE__.__LINE__);
+                
+                
+                
+            }
+            
+            die(__FILE__.__LINE__);
+  
+      }
+      
+      
+    //old
+    function migrate_writer_to_writer() {
+        die("old");
+
+        $count_all = $this->count_all();//633642
+        $count = 300;//take on oe bite
+        echo '<pre>';
+        print_r($count_all);
+
+        for ($start = 0; $start < $count_all; $start = $start + $count) {
+
+
+
+
+             $this->load->model('songsplits_live/writermodel', 'writermodel_live');
+             //$this->db_songsplits_live->limit(4, $offset);
+             //$start = $offset; 
+
+             $the_results['writer_list'] = $this->writermodel_live->find(NULL, $start, $count);  // Send the retrievelist msg
+
+
+             echo '<pre>';
+             var_dump($the_results);
+
+
+             if( ! empty($the_results['writer_list']) )
+             {
+                 $this->load->model('songsplits_api_new/writermodel_api');
+                 $this->writermodel_api->migrate_writer_to_writer($the_results);
+             }
+
+        }
+
+        echo '<pre>';
+        print_r($start);
           echo '<pre>';
           print_r($count_all);
-
-          for ($start = 0; $start < $count_all; $start = $start + $count) {
-              
-              
-              
-              
-               $this->load->model('songsplits_live/writermodel', 'writermodel_live');
-               //$this->db_songsplits_live->limit(4, $offset);
-               //$start = $offset; 
-               
-               $the_results['writer_list'] = $this->writermodel_live->find(NULL, $start, $count);  // Send the retrievelist msg
-               
-            
-               echo '<pre>';
-               var_dump($the_results);
-               
-               
-               if( ! empty($the_results['writer_list']) )
-               {
-                   $this->load->model('songsplits_api_new/writermodel_api');
-                   $this->writermodel_api->migrate_writer_to_writer($the_results);
-               }
-               
-          }
-          
           echo '<pre>';
-          print_r($start);
-            echo '<pre>';
-            print_r($count_all);
-            echo '<pre>';
-            //print_r($the_results);
-            echo '<pre>';
-            //print_r($the_results);
-            echo '<pre>';
-          die(__FILE__.__LINE__);
+          //print_r($the_results);
+          echo '<pre>';
+          //print_r($the_results);
+          echo '<pre>';
+        die(__FILE__.__LINE__);
+
+
+
+
+    }
+
+    
+    //    Migrate live.a_writer_name to api.writer
+    //    Migrate live.a_writer_name to api.user
+    //    Api.user -(1:1)- api.writer
+    function migrate_a_writer_name_to_writer() {
+
+        $count_all = $this->count_all();//633642
+        $count = 600;//take on oe bite
+        echo '<pre>';
+        print_r($count_all);
+
+        for ($start = 0; $start < $count_all; $start = $start + $count) {
+
+             //find all from tbl.a_writer_name
+             $this->load->model('songsplits_live/writermodel', 'writermodel_live');
+             $the_results['writer_list'] = $this->writermodel_live->find_a_writer_name(NULL, $start, $count);  // Send the retrievelist msg
+
+
+             if( ! empty($the_results['writer_list']) )
+             {
+                 $this->load->model('songsplits_api_new/writermodel_api');
+                 $this->writermodel_api->migrate_a_writer_name_to_writer($the_results);
+             }
+
+        }
+
+        echo '<pre>';
+        print_r($start);
+          echo '<pre>';
+          print_r($count_all);
+          echo '<pre>';
+          //print_r($the_results);
+          echo '<pre>';
+          //print_r($the_results);
+          echo '<pre>';
+        die(__FILE__.__LINE__);
       	 
           
           
 
-      }
+    }
       
       
        function migrate_writer_to_user() {
